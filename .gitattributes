@@ -1,3 +1,4 @@
 *.img filter=lfs diff=lfs merge=lfs -text
 boot/stock_boot.bin filter=lfs diff=lfs merge=lfs -text
 boot/stock_boot_full_vbmeta.bin filter=lfs diff=lfs merge=lfs -text
+boot/stock_boot_stripped.bin filter=lfs diff=lfs merge=lfs -text
