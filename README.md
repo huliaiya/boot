@@ -5,25 +5,38 @@
 - 内核版本：`4.14.246-K20Pro-Docker`（arm64，SMP PREEMPT）
 - 基础源码：CAF 4.14.246 for Xiaomi SM8150（Immensity，android11 分支）
 - 工具链：Proton clang 13.0.0 (LLD 13.0.0)
-- 在 `raphael_defconfig` 基础上补齐 Docker 所需内核特性（PID/USER/IPC 命名空间、cgroup device/pids、OverlayFS、VETH、bridge-nf、nftables、NAT、IPVS、xt_addrtype 等）
+- 在 `raphael_defconfig` 基础上补齐 Docker 所需内核特性（命名空间、cgroup device/pids、OverlayFS、VETH、bridge-nf、iptables、NAT、IPVS、xt_addrtype 等）
+
+## 两个版本
+
+| 版本 | 配置 | Image | 推荐场景 |
+|---|---|---|---|
+| 激进版 | `docker_fragment.config` | 48.7MB | 完整 Docker 特性（USER_NS、nftables、checkpoint） |
+| **保守版** | `docker_fragment_conservative.config` | 46.4MB | **默认推荐**：关 USER_NS（防银行 App 检测）、关 NF_TABLES（用 iptables-legacy 兼容 Android 网络栈）、关 CHECKPOINT_RESTORE（Android 不用） |
+
+保守版牺牲的 Docker 功能（一般用不到）：
+- `--userns-remap`（命名空间用户映射）
+- `nftables` 后端（Docker daemon 默认 iptables 即可）
 
 ## 文件
 
 | 文件 | 说明 |
 |---|---|
-| `boot/stock_boot_full_vbmeta.bin` | **推荐**：128MB 修复版 boot.img，Docker 内核替换 + 完整保留 vbmeta 段 |
-| `boot/stock_boot_stripped.bin` | 128MB fallback：vbmeta 段和 footer 已清空（用于 `stock_boot_full_vbmeta.bin` 仍不开机时） |
+| `boot/stock_boot_conservative_vbmeta.bin` | **推荐**：128MB 修复版 boot.img（保守版内核 + 保留 vbmeta） |
+| `boot/stock_boot_full_vbmeta.bin` | 128MB 修复版 boot.img（激进版内核 + 保留 vbmeta） |
+| `boot/stock_boot_stripped.bin` | 128MB fallback：vbmeta 段清空 |
 | `boot/stock_boot.bin` | 128MB 原版 boot.img dump，纯刷回救机用 |
 | `boot/boot.img` (LFS) | 早期 48MB kernel-only boot.img，**不要直接 fastboot flash boot**（覆盖 vbmeta 段导致开不了机） |
-| `docker_fragment.config` | 新增的 Docker 特性配置片段 |
+| `docker_fragment_conservative.config` | 保守版 Docker 特性配置片段 |
+| `docker_fragment.config` | 激进版 Docker 特性配置片段 |
 | `DOCKER_KERNEL_USAGE.md` | 完整使用说明（刷入 / chroot / Docker 安装与启动） |
 
 ## 快速开始（修复版 boot.img）
 
 ```bash
-# 1. 下载修复版（Docker 内核 + 保留 vbmeta）
+# 1. 下载保守版修复版（推荐）
 curl -L -o boot_docker.bin \
-  https://raw.githubusercontent.com/huliaiya/boot/main/boot/stock_boot_full_vbmeta.bin
+  https://raw.githubusercontent.com/huliaiya/boot/main/boot/stock_boot_conservative_vbmeta.bin
 
 # 2. 进入 fastboot 模式，刷入
 adb reboot bootloader
