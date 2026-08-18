@@ -6,7 +6,9 @@
 
 下载并刷入以下 128MB 修复版 boot.img：
 
-- **`boot/stock_boot_full_vbmeta.bin`**（推荐）：Docker 内核 + 完整保留 vbmeta
+- **`boot/stock_boot_conservative_vbmeta.bin`**（保守版，**推荐默认**）：Docker 内核 + 完整保留 vbmeta
+  - 下载: `https://raw.githubusercontent.com/huliaiya/boot/main/boot/stock_boot_conservative_vbmeta.bin`
+- **`boot/stock_boot_full_vbmeta.bin`**（激进版）：完整 Docker 特性（含 USER_NS、NF_TABLES）
   - 下载: `https://raw.githubusercontent.com/huliaiya/boot/main/boot/stock_boot_full_vbmeta.bin`
 - **`boot/stock_boot_stripped.bin`**（fallback）：vbmeta 段清空
   - 下载: `https://raw.githubusercontent.com/huliaiya/boot/main/boot/stock_boot_stripped.bin`
@@ -16,11 +18,15 @@
 ## 刷机命令
 
 ```bash
-# 修复版（先试这个）
+# 保守版（先试这个）
+fastboot flash boot stock_boot_conservative_vbmeta.bin
+fastboot reboot
+
+# 激进版（保守版不开机时）
 fastboot flash boot stock_boot_full_vbmeta.bin
 fastboot reboot
 
-# 失败时试 stripped
+# stripped（仍不开机）
 fastboot flash boot stock_boot_stripped.bin
 fastboot reboot
 
